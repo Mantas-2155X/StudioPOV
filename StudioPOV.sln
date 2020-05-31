@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_StudioPOV", "PH_StudioPO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_StudioPOV", "HS2_StudioPOV\HS2_StudioPOV.csproj", "{CF7A21A5-F99E-44E9-B63B-400183EF2F2D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_StudioPOV", "KK_StudioPOV\KK_StudioPOV.csproj", "{30CC0DD3-5FCD-4498-82B9-A896DA739DDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{CF7A21A5-F99E-44E9-B63B-400183EF2F2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF7A21A5-F99E-44E9-B63B-400183EF2F2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF7A21A5-F99E-44E9-B63B-400183EF2F2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30CC0DD3-5FCD-4498-82B9-A896DA739DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30CC0DD3-5FCD-4498-82B9-A896DA739DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30CC0DD3-5FCD-4498-82B9-A896DA739DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30CC0DD3-5FCD-4498-82B9-A896DA739DDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
