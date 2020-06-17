@@ -17,3 +17,7 @@ This plugin allows you to have first person view in Studio.
 
 **Configuration:**  
 * Open the plugin settings and change the settings according to your needs.  
+
+**Notes:**
+* Needs https://github.com/BepInEx/BepInEx for the plugin.
+* Needs https://github.com/BepInEx/BepInEx.ConfigurationManager for the configuration.
