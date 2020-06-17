@@ -1,9 +1,9 @@
-﻿using Studio;
+﻿using System.Collections;
+using Studio;
 
 using HarmonyLib;
 
 using BepInEx;
-using BepInEx.Harmony;
 using BepInEx.Configuration;
 
 using UnityEngine;
@@ -15,8 +15,8 @@ namespace PH_StudioPOV
     [BepInPlugin(nameof(PH_StudioPOV), nameof(PH_StudioPOV), VERSION)]
     public class PH_StudioPOV : BaseUnityPlugin
     {
-        public const string VERSION = "1.0.0";
-
+        public const string VERSION = "1.1.0";
+        
         private static Transform[] eyes;
         private static GameObject head;
         private static ChaControl chara;
@@ -43,17 +43,26 @@ namespace PH_StudioPOV
             fov = Config.Bind(new ConfigDefinition("General", "FOV"), 75f, new ConfigDescription("POV field of view", new AcceptableValueRange<float>(1f, 180f)));
             hideHead = Config.Bind(new ConfigDefinition("General", "Hide head"), true);
 
+            fov.SettingChanged += delegate
+            {
+                if (!toggle || cc == null)
+                    return;
+
+                cc.fieldOfView = fov.Value;
+            };
+            
             hideHead.SettingChanged += delegate
             {
-                if (!toggle || cc == null || head == null)
+                if (!toggle || head == null)
                     return;
 
                 head.SetActive(!hideHead.Value);
             };
-            HarmonyWrapper.PatchAll(typeof(PH_StudioPOV));
+            
+            Harmony.CreateAndPatchAll(typeof(PH_StudioPOV));
         }
 
-        private void LateUpdate()
+        private void Update()
         {
             if (togglePOV.Value.IsDown())
             {
@@ -69,8 +78,11 @@ namespace PH_StudioPOV
             if (!toggle) 
                 return;
 
-            if (chara == null || head == null)
+            if (chara == null)
+            {
                 StopPOV();
+                return;
+            }
 
             if (Input.GetKey(KeyCode.Mouse0))
             {
@@ -80,17 +92,15 @@ namespace PH_StudioPOV
                 head.transform.localEulerAngles = new Vector3(-rotationY, rotationX, 0);
             }
             
-            ApplyPOV();
+            StartCoroutine(ApplyPOV());
         }
 
-        private static void ApplyPOV()
+        private static IEnumerator ApplyPOV()
         {
-            if (!toggle)
-                return;
+            yield return new WaitForEndOfFrame();
             
             cc.targetPos = Vector3.Lerp(eyes[0].position, eyes[1].position, 0.5f);
             cc.cameraAngle = eyes[0].eulerAngles;
-            cc.fieldOfView = fov.Value;
         }
         
         private static void StartPOV()
@@ -138,6 +148,8 @@ namespace PH_StudioPOV
             rotationX = 0f;
             rotationY = 0f;
 
+            cc.fieldOfView = fov.Value;
+            
             toggle = true;
         }
 

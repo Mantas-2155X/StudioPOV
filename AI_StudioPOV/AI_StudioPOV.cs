@@ -1,21 +1,23 @@
-﻿using Studio;
+﻿using System.Collections;
+
+using Studio;
 using AIChara;
 
 using HarmonyLib;
 
 using BepInEx;
-using BepInEx.Harmony;
 using BepInEx.Configuration;
 
 using UnityEngine;
 
 namespace AI_StudioPOV
 {
-    [BepInPlugin(nameof(AI_StudioPOV), nameof(AI_StudioPOV), VERSION)][BepInProcess("StudioNEOV2")]
+    [BepInProcess("StudioNEOV2")]
+    [BepInPlugin(nameof(AI_StudioPOV), nameof(AI_StudioPOV), VERSION)]
     public class AI_StudioPOV : BaseUnityPlugin
     {
-        public const string VERSION = "1.0.0";
-
+        public const string VERSION = "1.1.0";
+        
         private static EyeObject[] eyes;
         private static ChaControl chara;
         private static GameObject head;
@@ -41,18 +43,26 @@ namespace AI_StudioPOV
             fov = Config.Bind(new ConfigDefinition("General", "FOV"), 75f, new ConfigDescription("POV field of view", new AcceptableValueRange<float>(1f, 180f)));
             hideHead = Config.Bind(new ConfigDefinition("General", "Hide head"), true);
 
+            fov.SettingChanged += delegate
+            {
+                if (!toggle || cc == null)
+                    return;
+
+                cc.fieldOfView = fov.Value;
+            };
+            
             hideHead.SettingChanged += delegate
             {
-                if (!toggle || cc == null || head == null)
+                if (!toggle || head == null)
                     return;
 
                 head.SetActive(!hideHead.Value);
             };
-            
-            HarmonyWrapper.PatchAll(typeof(AI_StudioPOV));
+
+            Harmony.CreateAndPatchAll(typeof(AI_StudioPOV));
         }
 
-        private void LateUpdate()
+        private void Update()
         {
             if (togglePOV.Value.IsDown())
             {
@@ -69,7 +79,10 @@ namespace AI_StudioPOV
                 return;
 
             if (chara == null)
+            {
                 StopPOV();
+                return;
+            }
 
             if (Input.GetKey(KeyCode.Mouse0))
             {
@@ -79,16 +92,17 @@ namespace AI_StudioPOV
                 viewRotation += new Vector3(y, x, 0f);
             }
             
-            ApplyPOV();
+            StartCoroutine(ApplyPOV());
         }
 
-        private static void ApplyPOV()
+        private static IEnumerator ApplyPOV()
         {
-            chara.neckLookCtrl.neckLookScript.aBones[0].neckBone.Rotate(viewRotation);
+            yield return new WaitForEndOfFrame();
 
+            chara.neckLookCtrl.neckLookScript.aBones[0].neckBone.Rotate(viewRotation);
+            
             cc.targetPos = Vector3.Lerp(eyes[0].eyeTransform.position, eyes[1].eyeTransform.position, 0.5f);
             cc.cameraAngle = eyes[0].eyeTransform.eulerAngles;
-            cc.fieldOfView = fov.Value;
         }
         
         private static void StartPOV()
@@ -126,6 +140,8 @@ namespace AI_StudioPOV
             cc.Import(new Studio.CameraControl.CameraData(data) {distance = Vector3.zero});
             viewRotation = Vector3.zero;
 
+            cc.fieldOfView = fov.Value;
+            
             toggle = true;
         }
 

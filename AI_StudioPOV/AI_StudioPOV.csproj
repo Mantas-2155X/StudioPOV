@@ -33,23 +33,23 @@
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="0Harmony, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>../../../../../../media/drive/Windows/Games/Ai-Syoujyo/BepInEx/core/0Harmony.dll</HintPath>
+          <HintPath>../../../../../../media/illusion/Ai-Syoujyo/BepInEx/core/0Harmony.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\StudioNEOV2_Data\Managed\Assembly-CSharp.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\media\illusion\Ai-Syoujyo\StudioNEOV2_Data\Managed\Assembly-CSharp.dll</HintPath>
             <Private>False</Private>
         </Reference>
-        <Reference Include="BepInEx, Version=5.0.1.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\BepInEx\core\BepInEx.dll</HintPath>
+        <Reference Include="BepInEx, Version=5.1.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\..\..\..\..\media\illusion\Ai-Syoujyo\BepInEx\core\BepInEx.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="BepInEx.Harmony, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\BepInEx\core\BepInEx.Harmony.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\media\illusion\Ai-Syoujyo\BepInEx\core\BepInEx.Harmony.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="Cinemachine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\StudioNEOV2_Data\Managed\Cinemachine.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\media\illusion\Ai-Syoujyo\StudioNEOV2_Data\Managed\Cinemachine.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="System" />
@@ -57,11 +57,11 @@
         <Reference Include="System.Data" />
         <Reference Include="System.Xml" />
         <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\StudioNEOV2_Data\Managed\UnityEngine.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\media\illusion\Ai-Syoujyo\StudioNEOV2_Data\Managed\UnityEngine.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\..\..\..\media\drive\Windows\Games\Ai-Syoujyo\StudioNEOV2_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\media\illusion\Ai-Syoujyo\StudioNEOV2_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
             <Private>False</Private>
         </Reference>
     </ItemGroup>
@@ -70,6 +70,7 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+    <Import Project="..\Shared\Shared.projitems" Label="Shared" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
          Other similar extension points exist, see Microsoft.Common.targets.
     <Target Name="BeforeBuild">
