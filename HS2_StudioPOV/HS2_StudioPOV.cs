@@ -16,7 +16,7 @@ namespace HS2_StudioPOV
     [BepInPlugin(nameof(HS2_StudioPOV), nameof(HS2_StudioPOV), VERSION)]
     public class HS2_StudioPOV : BaseUnityPlugin
     {
-        public const string VERSION = "1.1.0";
+        public const string VERSION = "1.1.1";
         
         private static EyeObject[] eyes;
         private static ChaControl chara;
@@ -24,6 +24,8 @@ namespace HS2_StudioPOV
         
         private static Studio.CameraControl cc;
         private static Studio.CameraControl.CameraData backupData;
+        
+        private static Studio.Studio studio;
         
         private static Vector3 viewRotation;
 
@@ -40,18 +42,14 @@ namespace HS2_StudioPOV
             togglePOV = Config.Bind("Keyboard Shortcuts", "Toggle POV", new KeyboardShortcut(KeyCode.P));
             
             sensitivity = Config.Bind(new ConfigDefinition("General", "Mouse sensitivity"), 2f);
-            fov = Config.Bind(new ConfigDefinition("General", "FOV"), 75f, new ConfigDescription("POV field of view", new AcceptableValueRange<float>(1f, 180f)));
-            hideHead = Config.Bind(new ConfigDefinition("General", "Hide head"), true);
-
-            fov.SettingChanged += delegate
+            (fov = Config.Bind(new ConfigDefinition("General", "FOV"), 75f, new ConfigDescription("POV field of view", new AcceptableValueRange<float>(1f, 180f)))).SettingChanged += delegate
             {
                 if (!toggle || cc == null)
                     return;
 
                 cc.fieldOfView = fov.Value;
             };
-            
-            hideHead.SettingChanged += delegate
+            (hideHead = Config.Bind(new ConfigDefinition("General", "Hide head"), true)).SettingChanged += delegate
             {
                 if (!toggle || head == null)
                     return;
@@ -59,16 +57,25 @@ namespace HS2_StudioPOV
                 head.SetActive(!hideHead.Value);
             };
             
-            Harmony.CreateAndPatchAll(typeof(HS2_StudioPOV));
+            var harmony = new Harmony(nameof(HS2_StudioPOV));
+            harmony.PatchAll(typeof(HS2_StudioPOV));
         }
 
         private void Update()
         {
             if (togglePOV.Value.IsDown())
             {
-                if (!Singleton<Studio.Studio>.IsInstance())
-                    return;
-                
+                if (studio == null || cc == null)
+                {
+                    studio = Singleton<Studio.Studio>.Instance;
+                    if (studio == null)
+                        return;
+                    
+                    cc = studio.cameraCtrl;
+                    if (cc == null)
+                        return;
+                }
+
                 if (!toggle)
                     StartPOV();
                 else
@@ -110,15 +117,7 @@ namespace HS2_StudioPOV
             var ctrlInfo = Studio.Studio.GetCtrlInfo(Singleton<Studio.Studio>.Instance.treeNodeCtrl.selectNode);
             if (!(ctrlInfo is OCIChar ocichar))
                 return;
-            
-            var temp = GameObject.Find("StudioScene/Camera/CameraSet/CameraController");
-            if (temp == null)
-                return;
-            
-            cc = temp.GetComponent<Studio.CameraControl>();
-            if (cc == null)
-                return;
-            
+
             chara = ocichar.charInfo;
             
             eyes = chara.eyeLookCtrl.eyeLookScript.eyeObjs;

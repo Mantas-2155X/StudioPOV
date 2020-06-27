@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+
 using Studio;
 
 using HarmonyLib;
@@ -15,7 +16,7 @@ namespace PH_StudioPOV
     [BepInPlugin(nameof(PH_StudioPOV), nameof(PH_StudioPOV), VERSION)]
     public class PH_StudioPOV : BaseUnityPlugin
     {
-        public const string VERSION = "1.1.0";
+        public const string VERSION = "1.1.1";
         
         private static Transform[] eyes;
         private static GameObject head;
@@ -23,6 +24,8 @@ namespace PH_StudioPOV
         
         private static CameraControl cc;
         private static CameraControl.CameraData backupData;
+
+        private static Studio.Studio studio;
         
         private static float rotationX;
         private static float rotationY;
@@ -40,18 +43,14 @@ namespace PH_StudioPOV
             togglePOV = Config.Bind("Keyboard Shortcuts", "Toggle POV", new KeyboardShortcut(KeyCode.P));
             
             sensitivity = Config.Bind(new ConfigDefinition("General", "Mouse sensitivity"), 80f);
-            fov = Config.Bind(new ConfigDefinition("General", "FOV"), 75f, new ConfigDescription("POV field of view", new AcceptableValueRange<float>(1f, 180f)));
-            hideHead = Config.Bind(new ConfigDefinition("General", "Hide head"), true);
-
-            fov.SettingChanged += delegate
+            (fov = Config.Bind(new ConfigDefinition("General", "FOV"), 75f, new ConfigDescription("POV field of view", new AcceptableValueRange<float>(1f, 180f)))).SettingChanged += delegate
             {
                 if (!toggle || cc == null)
                     return;
 
                 cc.fieldOfView = fov.Value;
             };
-            
-            hideHead.SettingChanged += delegate
+            (hideHead = Config.Bind(new ConfigDefinition("General", "Hide head"), true)).SettingChanged += delegate
             {
                 if (!toggle || head == null)
                     return;
@@ -59,16 +58,25 @@ namespace PH_StudioPOV
                 head.SetActive(!hideHead.Value);
             };
             
-            Harmony.CreateAndPatchAll(typeof(PH_StudioPOV));
+            var harmony = new Harmony(nameof(PH_StudioPOV));
+            harmony.PatchAll(typeof(PH_StudioPOV));
         }
 
         private void Update()
         {
             if (togglePOV.Value.IsDown())
             {
-                if (!Singleton<Studio.Studio>.IsInstance())
-                    return;
-                
+                if (studio == null || cc == null)
+                {
+                    studio = Singleton<Studio.Studio>.Instance;
+                    if (studio == null)
+                        return;
+                    
+                    cc = studio.cameraCtrl;
+                    if (cc == null)
+                        return;
+                }
+
                 if (!toggle)
                     StartPOV();
                 else
@@ -105,22 +113,18 @@ namespace PH_StudioPOV
         
         private static void StartPOV()
         {
-            var ctrlInfo = Studio.Studio.GetCtrlInfo(Singleton<Studio.Studio>.Instance.treeNodeCtrl.selectNode);
+            var ctrlInfo = Studio.Studio.GetCtrlInfo(studio.treeNodeCtrl.selectNode);
             if (!(ctrlInfo is OCIChar ocichar))
                 return;
-            
-            var temp = GameObject.Find("StudioScene/Camera/Main Camera");
-            if (temp == null)
-                return;
-            
-            cc = temp.GetComponent<CameraControl>();
-            if (cc == null)
-                return;
-            
+
             chara = ocichar.charInfo;
             eyes = new Transform[2];
+
+            head = chara.human.head.Obj;
+            if (head == null)
+                return;
             
-            foreach (var child in chara.transform.GetComponentsInChildren<Transform>())
+            foreach (var child in head.transform.GetComponentsInChildren<Transform>())
             {
                 if(child.name.Contains("_J_Eye_t_L"))
                     eyes[0] = child;
@@ -129,10 +133,6 @@ namespace PH_StudioPOV
             }
             
             if (eyes[0] == null || eyes[1] == null)
-                return;
-
-            head = chara.human.head.Obj;
-            if (head == null)
                 return;
 
             if(hideHead.Value)
