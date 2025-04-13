@@ -9,6 +9,10 @@ using BepInEx;
 using BepInEx.Configuration;
 
 using UnityEngine;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
+using static GameCursor;
+using System;
+using static UnityEngine.GUI;
 
 namespace HS2_StudioPOV
 {
@@ -16,23 +20,28 @@ namespace HS2_StudioPOV
     [BepInPlugin(nameof(HS2_StudioPOV), nameof(HS2_StudioPOV), VERSION)]
     public class HS2_StudioPOV : BaseUnityPlugin
     {
-        public const string VERSION = "1.1.1";
-        
+        public const string GUID = "com.2155X.bepinex.studiopov";
+
+        public const string VERSION = "1.1.2";
+
         private static EyeObject[] eyes;
         private static ChaControl chara;
         private static GameObject head;
-        
+
         private static Studio.CameraControl cc;
         private static Studio.CameraControl.CameraData backupData;
-        
+
         private static Studio.Studio studio;
-        
+
         private static Vector3 viewRotation;
 
         private static float backupFov;
         private static bool toggle;
 
         private static ConfigEntry<KeyboardShortcut> togglePOV { get; set; }
+
+        private static ConfigEntry<KeyboardShortcut> dragKey { get; set; }
+
         private static ConfigEntry<bool> hideHead { get; set; }
         private static ConfigEntry<float> fov { get; set; }
         private static ConfigEntry<float> sensitivity { get; set; }
@@ -40,7 +49,8 @@ namespace HS2_StudioPOV
         private void Awake()
         {
             togglePOV = Config.Bind("Keyboard Shortcuts", "Toggle POV", new KeyboardShortcut(KeyCode.P));
-            
+            dragKey = Config.Bind("Keyboard Shortcuts", "Drag key", new KeyboardShortcut(KeyCode.Mouse2), new ConfigDescription("Hold this key to drag the camera around."));
+
             sensitivity = Config.Bind(new ConfigDefinition("General", "Mouse sensitivity"), 2f);
             (fov = Config.Bind(new ConfigDefinition("General", "FOV"), 75f, new ConfigDescription("POV field of view", new AcceptableValueRange<float>(1f, 180f)))).SettingChanged += delegate
             {
@@ -56,7 +66,7 @@ namespace HS2_StudioPOV
 
                 head.SetActive(!hideHead.Value);
             };
-            
+
             var harmony = new Harmony(nameof(HS2_StudioPOV));
             harmony.PatchAll(typeof(HS2_StudioPOV));
         }
@@ -70,7 +80,7 @@ namespace HS2_StudioPOV
                     studio = Singleton<Studio.Studio>.Instance;
                     if (studio == null)
                         return;
-                    
+
                     cc = studio.cameraCtrl;
                     if (cc == null)
                         return;
@@ -82,7 +92,7 @@ namespace HS2_StudioPOV
                     StopPOV();
             }
 
-            if (!toggle) 
+            if (!toggle)
                 return;
 
             if (chara == null)
@@ -90,12 +100,12 @@ namespace HS2_StudioPOV
                 StopPOV();
                 return;
             }
-            
-            if (Input.GetKey(KeyCode.Mouse0))
+
+            if (dragKey.Value.IsPressed())
             {
                 var x = Input.GetAxis("Mouse X") * sensitivity.Value;
                 var y = -Input.GetAxis("Mouse Y") * sensitivity.Value;
-                
+
                 viewRotation += new Vector3(y, x, 0f);
             }
 
@@ -107,11 +117,11 @@ namespace HS2_StudioPOV
             yield return new WaitForEndOfFrame();
 
             chara.neckLookCtrl.neckLookScript.aBones[0].neckBone.Rotate(viewRotation);
-            
+
             cc.targetPos = Vector3.Lerp(eyes[0].eyeTransform.position, eyes[1].eyeTransform.position, 0.5f);
             cc.cameraAngle = eyes[0].eyeTransform.eulerAngles;
         }
-        
+
         private static void StartPOV()
         {
             var ctrlInfo = Studio.Studio.GetCtrlInfo(Singleton<Studio.Studio>.Instance.treeNodeCtrl.selectNode);
@@ -119,24 +129,24 @@ namespace HS2_StudioPOV
                 return;
 
             chara = ocichar.charInfo;
-            
+
             eyes = chara.eyeLookCtrl.eyeLookScript.eyeObjs;
             if (eyes == null)
                 return;
-            
+
             head = chara.objHeadBone;
             if (head == null)
                 return;
 
-            if(hideHead.Value)
+            if (hideHead.Value)
                 head.SetActive(false);
 
             var data = cc.Export();
-            
+
             backupData = data;
             backupFov = cc.fieldOfView;
-            
-            cc.Import(new Studio.CameraControl.CameraData(data) {distance = Vector3.zero});
+
+            cc.Import(new Studio.CameraControl.CameraData(data) { distance = Vector3.zero });
             viewRotation = Vector3.zero;
 
             cc.fieldOfView = fov.Value;
@@ -151,8 +161,8 @@ namespace HS2_StudioPOV
                 cc.Import(backupData);
                 cc.fieldOfView = backupFov;
             }
-            
-            if(head != null)
+
+            if (head != null)
                 head.SetActive(true);
 
             chara = null;
@@ -160,7 +170,34 @@ namespace HS2_StudioPOV
             backupData = null;
             toggle = false;
         }
-        
+
+        private readonly int uiWindowHash = GUID.GetHashCode();
+        private Rect uiRect = new Rect(20, Screen.height / 2 - 150, 160, 223);
+
+        protected void OnGUI()
+        {
+            if (toggle)
+            {
+                uiRect = GUILayout.Window(uiWindowHash, uiRect, WindowFunction, "POV settings");
+            }
+        }
+        private void WindowFunction(int windowID)
+        {
+            // Resolution settings section
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("FOV", GUI.skin.label);
+                GUILayout.BeginHorizontal();
+                {
+                    fov.Value = Mathf.Round(GUILayout.HorizontalSlider(fov.Value, 1f, 180f) * 10) / 10;
+                    GUILayout.Label(fov.Value.ToString("0.0"), GUI.skin.label, GUILayout.ExpandWidth(false));
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            GUI.DragWindow();
+        }
         [HarmonyPrefix, HarmonyPatch(typeof(Studio.CameraControl), "LateUpdate")]
         private static bool CameraControl_LateUpdate_Patch()
         {
