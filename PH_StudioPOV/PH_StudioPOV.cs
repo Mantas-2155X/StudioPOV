@@ -8,6 +8,10 @@ using BepInEx;
 using BepInEx.Configuration;
 
 using UnityEngine;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
+using static GameCursor;
+using System;
+using static UnityEngine.GUI;
 
 namespace PH_StudioPOV
 {
@@ -16,7 +20,9 @@ namespace PH_StudioPOV
     [BepInPlugin(nameof(PH_StudioPOV), nameof(PH_StudioPOV), VERSION)]
     public class PH_StudioPOV : BaseUnityPlugin
     {
-        public const string VERSION = "1.1.1";
+        public const string GUID = "com.2155X.bepinex.studiopov";
+
+        public const string VERSION = "1.1.2";
         
         private static Transform[] eyes;
         private static GameObject head;
@@ -34,6 +40,9 @@ namespace PH_StudioPOV
         private static bool toggle;
 
         private static ConfigEntry<KeyboardShortcut> togglePOV { get; set; }
+        
+        private static ConfigEntry<KeyboardShortcut> dragKey { get; set; }
+
         private static ConfigEntry<bool> hideHead { get; set; }
         private static ConfigEntry<float> fov { get; set; }
         private static ConfigEntry<float> sensitivity { get; set; }
@@ -41,7 +50,8 @@ namespace PH_StudioPOV
         private void Awake()
         {
             togglePOV = Config.Bind("Keyboard Shortcuts", "Toggle POV", new KeyboardShortcut(KeyCode.P));
-            
+            dragKey = Config.Bind("Keyboard Shortcuts", "Drag key", new KeyboardShortcut(KeyCode.Mouse2), new ConfigDescription("Hold this key to drag the camera around."));
+
             sensitivity = Config.Bind(new ConfigDefinition("General", "Mouse sensitivity"), 80f);
             (fov = Config.Bind(new ConfigDefinition("General", "FOV"), 75f, new ConfigDescription("POV field of view", new AcceptableValueRange<float>(1f, 180f)))).SettingChanged += delegate
             {
@@ -92,7 +102,7 @@ namespace PH_StudioPOV
                 return;
             }
 
-            if (Input.GetKey(KeyCode.Mouse0))
+            if (dragKey.Value.IsPressed())
             {
                 rotationX += Input.GetAxis("Mouse X") * sensitivity.Value * Time.deltaTime;
                 rotationY += Input.GetAxis("Mouse Y") * sensitivity.Value * Time.deltaTime;
@@ -172,6 +182,34 @@ namespace PH_StudioPOV
             head = null;
             backupData = null;
             toggle = false;
+        }
+        
+        private readonly int uiWindowHash = GUID.GetHashCode();
+        private Rect uiRect = new Rect(20, Screen.height / 2 - 150, 160, 223);
+
+        protected void OnGUI()
+        {
+            if (toggle)
+            {
+                uiRect = GUILayout.Window(uiWindowHash, uiRect, WindowFunction, "POV settings");
+            }
+        }
+        private void WindowFunction(int windowID)
+        {
+            // Resolution settings section
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("FOV", GUI.skin.label);
+                GUILayout.BeginHorizontal();
+                {
+                    fov.Value = Mathf.Round(GUILayout.HorizontalSlider(fov.Value, 1f, 180f) * 10) / 10;
+                    GUILayout.Label(fov.Value.ToString("0.0"), GUI.skin.label, GUILayout.ExpandWidth(false));
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            GUI.DragWindow();
         }
         
         [HarmonyPrefix, HarmonyPatch(typeof(CameraControl), "LateUpdate")]

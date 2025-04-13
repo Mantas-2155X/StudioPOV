@@ -198,6 +198,7 @@ namespace HS2_StudioPOV
 
             GUI.DragWindow();
         }
+        
         [HarmonyPrefix, HarmonyPatch(typeof(Studio.CameraControl), "LateUpdate")]
         private static bool CameraControl_LateUpdate_Patch()
         {
