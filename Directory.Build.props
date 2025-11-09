@@ -1,0 +1,42 @@
+<Project>
+	<PropertyGroup>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<OutputPath>$(SolutionDir)\bin\$(MSBuildProjectName)</OutputPath>
+
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+		<Deterministic>true</Deterministic>
+		<DeterministicSourcePaths>true</DeterministicSourcePaths>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>embedded</DebugType>
+		<FileAlignment>512</FileAlignment>
+
+		<NoWarn>1701;1702;NETSDK1138</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$(MSBuildProjectName.IndexOf('_')) != -1">
+		<!--Add constants based on the first part of the project name e.g. KK-KKS_Fix_DynamicBones -> KK;KKS-->
+		<DefineConstants>$(MSBuildProjectName.Substring(0, $(MSBuildProjectName.IndexOf('_'))).Replace('-',';'))</DefineConstants>
+	</PropertyGroup>
+	
+	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<OutputPath>../_bin/</OutputPath>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<OutputPath>../_bin/$(DefineConstants)/BepInEx/plugins/2155X/</OutputPath>
+		<Optimize>true</Optimize>
+	</PropertyGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Delete Files="$(OutputPath)\$(MSBuildProjectName).deps.json" />
+		<Delete Files="$(OutputPath)\$(AssemblyName).deps.json" />
+	</Target>
+
+	<Target Name="SkipAllRefs" AfterTargets="ResolveReferences" Condition=" '$(OutputType)' == 'Library' ">
+		<ItemGroup>
+			<ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" />
+		</ItemGroup>
+	</Target>
+</Project>
