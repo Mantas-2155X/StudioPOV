@@ -1,6 +1,9 @@
 # StudioPOV
 
-This plugin allows you to have first person view in Studio.  
+This plugin allows you to have first person view in Studio.
+
+Note: Consider using RealPOV instead, has the same functionality with more features.
+      You can get it from https://github.com/IllusionMods/KeelPlugins
 
 # DO NOT REUPLOAD WITHOUT PERMISSION | 未经许可请勿转载
 
