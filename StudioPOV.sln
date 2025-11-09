@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Solution", "_Solution", "{
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_StudioPOV", "KKS_StudioPOV\KKS_StudioPOV.csproj", "{70B94215-B33C-57B9-ED60-5B99732FBA73}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{30CC0DD3-5FCD-4498-82B9-A896DA739DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30CC0DD3-5FCD-4498-82B9-A896DA739DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30CC0DD3-5FCD-4498-82B9-A896DA739DDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70B94215-B33C-57B9-ED60-5B99732FBA73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70B94215-B33C-57B9-ED60-5B99732FBA73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70B94215-B33C-57B9-ED60-5B99732FBA73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70B94215-B33C-57B9-ED60-5B99732FBA73}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
